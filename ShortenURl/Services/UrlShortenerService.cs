@@ -19,6 +19,17 @@
             if (!IsValidUrl(originalUrl))
                 throw new ArgumentException("Invalid URL");
 
+            // Check for existing URL
+            var existingShortId = _repository.GetShortIdByOriginalUrl(originalUrl);
+            if (existingShortId != null)
+            {
+                return new ShortenUrlResponse
+                {
+                    ShortId = existingShortId,
+                    ShortUrl = $"{hostDomain}/{existingShortId}"
+                };
+            }
+
             var shortId = Guid.NewGuid().ToString("N").Substring(0, 8);
 
             if (_repository.Exists(shortId))

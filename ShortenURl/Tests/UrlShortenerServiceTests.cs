@@ -78,5 +78,25 @@ namespace ShortenURl.Tests
             Assert.Throws<KeyNotFoundException>(() => _service.ResolveUrl(shortId));
             _mockRepository.Verify(repo => repo.GetOriginalUrl(shortId), Times.Once);
         }
+
+        [Fact]
+        public void ShortenUrl_DuplicateOriginalUrl_ReturnsExistingShortUrl()
+        {
+            // Arrange
+            var originalUrl = "http://example.com";
+            var hostDomain = "http://localhost";
+            var existingShortId = "abc123";
+
+            _mockRepository.Setup(repo => repo.GetShortIdByOriginalUrl(originalUrl)).Returns(existingShortId);
+
+            // Act
+            var result = _service.ShortenUrl(originalUrl, hostDomain);
+
+            // Assert
+            Assert.Equal(existingShortId, result.ShortId);
+            Assert.Equal($"{hostDomain}/{existingShortId}", result.ShortUrl);
+            _mockRepository.Verify(repo => repo.GetShortIdByOriginalUrl(originalUrl), Times.Once);
+            _mockRepository.Verify(repo => repo.AddMapping(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
     }
 }
